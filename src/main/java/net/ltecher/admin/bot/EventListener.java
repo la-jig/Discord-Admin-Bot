@@ -29,17 +29,22 @@ public class EventListener extends ListenerAdapter {
         switch (event.getName()) {
             case "mute":
                 User member = event.getOption("user").getAsUser();
-                if (muted.containsKey(member) && muted.get(member).get(0) == (String)event.getGuild().getId()) {
-                    muted.remove(member);
+                if (muted.containsKey(member)) {
+                    String thisId = event.getGuild().getId();
+                    for (ArrayList value : muted.values()) {
+                        if (thisId.equals((String)value.get(1))) {
+                            if (muted.remove(member, value) == true) {
+                                EmbedBuilder embed = new EmbedBuilder();
+                                embed.setTitle("Success!", null);
+                                embed.setColor(Color.GREEN);
+                                
+                                embed.setDescription("Successfully unmuted " + member.getAsMention() + "!");
 
-                    EmbedBuilder embed = new EmbedBuilder();
-                    embed.setTitle("Success!", null);
-                    embed.setColor(Color.GREEN);
-                    
-                    embed.setDescription("Successfully unmuted " + member.getAsMention() + "!");
-
-                    event.reply("").setEmbeds(embed.build()).queue();
-                    break;
+                                event.reply("").setEmbeds(embed.build()).queue();
+                                return;
+                            }
+                        }
+                    }
                 }
 
                 EmbedBuilder embed = new EmbedBuilder();
@@ -61,7 +66,7 @@ public class EventListener extends ListenerAdapter {
 
                 muted.put(member, guild_reason);
 
-                embed.setDescription("Successfully muted " + member.getAsMention() + " for reason " + reason + "!");
+                embed.setDescription("Successfully muted " + member.getAsMention() + " for reason \"" + reason + "\"!");
 
                 event.reply("").setEmbeds(embed.build()).queue();
                 
@@ -70,17 +75,19 @@ public class EventListener extends ListenerAdapter {
     }
     public void onMessageReceived(MessageReceivedEvent event) {
         if (muted.containsKey(event.getAuthor())) {
-            System.out.println(muted.get(event.getAuthor()).get(1) + " " + event.getGuild().getId());
-            System.out.println((String)muted.get(event.getAuthor()).get(1) == (String)event.getGuild().getId());
-            if ((String)muted.get(event.getAuthor()).get(1) == (String)event.getGuild().getId()) {
-                EmbedBuilder embed = new EmbedBuilder();
-                embed.setTitle("Muted!", null);
-                embed.setColor(Color.RED);
-                
-                embed.setDescription(event.getAuthor().getAsMention() + ", You are muted for reason \"" + muted.get(event.getAuthor()).get(0) + "\" and cannot talk whilst muted!");
-                
-                event.getMessage().reply("").setEmbeds(embed.build()).queue();
-                event.getMessage().delete().queue();
+            String thisId = event.getGuild().getId();
+            for (ArrayList value : muted.values()) {
+                if (thisId.equals((String)value.get(1))) {
+                    EmbedBuilder embed = new EmbedBuilder();
+                    embed.setTitle("Muted!", null);
+                    embed.setColor(Color.RED);
+                    
+                    embed.setDescription(event.getAuthor().getAsMention() + ", You are muted for reason \"" + muted.get(event.getAuthor()).get(0) + "\" and cannot talk whilst muted!");
+                    
+                    event.getMessage().reply("").setEmbeds(embed.build()).queue();
+                    event.getMessage().delete().queue();
+                    break;
+                }
             }
         }
     }
