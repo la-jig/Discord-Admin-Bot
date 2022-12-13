@@ -32,7 +32,7 @@ select_game = False
 
 pending = []
 
-class Logger:
+class Logger():
     def __init__(self, name=None):
         self.name = name
         
